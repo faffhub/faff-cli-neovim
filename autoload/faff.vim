@@ -36,14 +36,16 @@ function! faff#Complete(findstart, base) abort
         " Get the faff command (configurable via g:faff_command)
         let faff_cmd = get(g:, 'faff_command', 'faff')
 
-        " Call faff field list to get completions
+        " Call faff field list to get completions (now includes all defined values)
         let cmd = faff_cmd . ' field list ' . field_name . ' --plain 2>/dev/null | tail -n +2'
         let lines = systemlist(cmd)
 
         " Filter based on what's already typed
         let matches = []
         for line in lines
-            " Parse TSV output: columns are Value, [Name for trackers], Intents, Sessions, Logs
+            " Parse TSV output from 'faff field list'
+            " - For trackers: Value, Name, Intents, Sessions, Logs
+            " - For other fields: Value, Intents, Sessions, Logs
             let parts = split(line, '\t')
             if len(parts) == 0
                 continue
