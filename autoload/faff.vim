@@ -37,18 +37,41 @@ function! faff#Complete(findstart, base) abort
         let faff_cmd = get(g:, 'faff_command', 'faff')
 
         " Call faff field list to get completions
-        let cmd = faff_cmd . ' field list ' . field_name . ' --plain 2>/dev/null | tail -n +2 | cut -f1'
-        let values = systemlist(cmd)
+        let cmd = faff_cmd . ' field list ' . field_name . ' --plain 2>/dev/null | tail -n +2'
+        let lines = systemlist(cmd)
 
         " Filter based on what's already typed
         let matches = []
-        for value in values
+        for line in lines
+            " Parse TSV output: columns are Value, [Name for trackers], Intents, Sessions, Logs
+            let parts = split(line, '\t')
+            if len(parts) == 0
+                continue
+            endif
+
+            let value = parts[0]
+
+            " For trackers, the second column is the name
+            let name = ''
+            if field_name == 'tracker' && len(parts) > 1
+                let name = parts[1]
+            endif
+
             if value =~ '^' . escape(a:base, '.*[]^$\')
-                call add(matches, {
-                    \ 'word': value,
-                    \ 'menu': '[' . field_name . ']',
-                    \ 'info': value
-                    \ })
+                " For trackers with names, insert value + comment
+                if field_name == 'tracker' && !empty(name)
+                    call add(matches, {
+                        \ 'word': '"' . value . '", # ' . name,
+                        \ 'menu': name,
+                        \ 'info': value . ' - ' . name
+                        \ })
+                else
+                    call add(matches, {
+                        \ 'word': value,
+                        \ 'menu': '[' . field_name . ']',
+                        \ 'info': value
+                        \ })
+                endif
             endif
         endfor
 
