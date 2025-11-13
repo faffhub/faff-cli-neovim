@@ -52,8 +52,6 @@ Add to your Neovim config:
 ## Usage
 
 The plugin automatically activates when editing:
-- Plan files: `Faff/plans/*.toml` or `Faff/plans/*.json`
-- Log files: `Faff/logs/*.toml` (via `faff log edit`)
 - Temporary intent files ending in `.faff.toml` (via `faff intent edit`, `faff intent derive`)
 
 ### Using the Telescope Picker
